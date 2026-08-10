@@ -16,7 +16,7 @@
 
             <p style="margin-top:15px;">
                 <i class="fas fa-phone"></i>
-                089681556300
+                +62 882-0054-48804 (Admin Web)
             </p>
 
             <p>
@@ -39,60 +39,87 @@
         </div>
 
         <!-- Media Sosial -->
-<div class="footer-item">
+        <div class="footer-item">
 
 <h3>Media Sosial</h3>
 
 <div class="social-media">
 
+    <!-- Instagram -->
     <a href="https://www.instagram.com/sdmuh_16ska?igsh=MTJ2YTg1dnd0ODZkNA=="
        target="_blank"
        class="social-card">
 
-        <i class="fab fa-instagram"></i>
+        <div class="icon-circle">
+            <i class="fab fa-instagram"></i>
+        </div>
 
-        <div>
+        <div class="social-text">
             <h4>Instagram</h4>
             <span>@sdmuh_16ska</span>
         </div>
 
     </a>
 
+    <!-- TikTok -->
     <a href="https://www.tiktok.com/@sdmuh16ska?is_from_webapp=1&sender_device=pc"
        target="_blank"
        class="social-card">
 
-        <i class="fab fa-tiktok"></i>
+        <div class="icon-circle">
+            <i class="fab fa-tiktok"></i>
+        </div>
 
-        <div>
+        <div class="social-text">
             <h4>Tiktok</h4>
             <span>SD Muhammadiyah 16 Karangasem</span>
         </div>
 
     </a>
 
+    <!-- YouTube -->
     <a href="https://www.youtube.com/@sdmuhammadiyah16karangasem"
        target="_blank"
        class="social-card">
 
-        <i class="fab fa-youtube"></i>
+        <div class="icon-circle">
+            <i class="fab fa-youtube"></i>
+        </div>
 
-        <div>
+        <div class="social-text">
             <h4>YouTube</h4>
             <span>SD Muhammadiyah 16 Karangasem</span>
         </div>
 
     </a>
 
-
-    <a href="https://wa.me/6281234567890"
+    <!-- Facebook -->
+    <a href="https://www.facebook.com/share/189LARSTBy/?mibextid=wwXIfr"
        target="_blank"
        class="social-card">
 
-        <i class="fab fa-whatsapp"></i>
+        <div class="icon-circle">
+            <i class="fab fa-facebook-f"></i>
+        </div>
 
-        <div>
-            <h4>WhatsApp</h4>
+        <div class="social-text">
+            <h4>Facebook</h4>
+            <span>Munasska Bright School</span>
+        </div>
+
+    </a>
+
+    <!-- WhatsApp -->
+    <a href="https://wa.me/6289681556300"
+       target="_blank"
+       class="social-card">
+
+        <div class="icon-circle">
+            <i class="fab fa-whatsapp"></i>
+        </div>
+
+        <div class="social-text">
+            <h4>WhatsApp PPDB</h4>
             <span>089681556300</span>
         </div>
 
@@ -118,9 +145,7 @@
         <img src="{{ asset('images/logo/AKREDITASIA.png') }}" alt="Logo 3">
     </div>
 
-    <div class="logo-item">
-        <img src="{{ asset('images/logo/BrightSchool.png') }}" alt="Logo 4">
-    </div>
+    
 
 </div>
 

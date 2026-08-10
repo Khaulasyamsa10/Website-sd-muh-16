@@ -2,8 +2,8 @@
     <div class="container">
 
         <div class="logo">
-            <img src="{{ asset('images//logo/logosdnew.png') }}" alt="Logo">
-            <span>SD Muhammadiyah 16 Karangasem</span>
+            <img src="{{ asset('images//logo/BrightSchool.png') }}" alt="Logo">
+            <span>SD Muhammadiyah 16 Karangasem Surakarta</span>
         </div>
 
         <ul class="menu">
@@ -13,40 +13,69 @@
                 <a href="/">Beranda</a>
             </li>
 
-            <!-- Prestasi -->
-            <li class="dropdown">
-    <a href="#">Prestasi</a>
+<!-- Prestasi -->
+<li class="dropdown {{ request()->routeIs('prestasi.*') ? 'active' : '' }}">
+
+    <a href="#"
+       class="dropdown-toggle"
+       aria-haspopup="true"
+       aria-expanded="false">
+
+        <span>Prestasi</span>
+
+        <i class="fa-solid fa-chevron-down"></i>
+
+    </a>
 
     <ul class="dropdown-menu">
 
         <li>
-            <a href="{{ url('/prestasi/keislaman') }}">
-                Keislaman
+            <a href="{{ route('prestasi.akademik') }}"
+               class="{{ request()->routeIs('prestasi.akademik') ? 'active' : '' }}">
+
+                
+
+                <span>Akademik</span>
+
             </a>
         </li>
 
         <li>
-            <a href="{{ url('/prestasi/olahraga') }}">
-                Olahraga
+            <a href="{{ route('prestasi.olahraga') }}"
+               class="{{ request()->routeIs('prestasi.olahraga') ? 'active' : '' }}">
+
+                
+
+                <span>Olahraga</span>
+
             </a>
         </li>
 
         <li>
-            <a href="{{ url('/prestasi/akademik') }}">
-                Akademik
+            <a href="{{ route('prestasi.keislaman') }}"
+               class="{{ request()->routeIs('prestasi.keislaman') ? 'active' : '' }}">
+
+                
+
+                <span>Keislaman</span>
+
             </a>
         </li>
 
         <li>
-            <a href="{{ url('/prestasi/seni') }}">
-                Seni
+            <a href="{{ route('prestasi.seni') }}"
+               class="{{ request()->routeIs('prestasi.seni') ? 'active' : '' }}">
+
+                
+
+                <span>Seni</span>
+
             </a>
         </li>
 
     </ul>
 
 </li>
-
             <!-- Agenda -->
             <li>
                 <a href="{{ url('/agenda') }}">Agenda</a>
