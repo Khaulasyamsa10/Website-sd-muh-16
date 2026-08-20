@@ -45,8 +45,9 @@
                 Dokumentasi Video
             </span>
 
-            <h2>Video Kegiatan Sekolah</h2>
-
+            <h2>
+                Video Kegiatan Sekolah
+            </h2>
 
         </div>
 
@@ -57,16 +58,24 @@
 
                 <article class="gallery-video-card">
 
-                    <!-- Thumbnail -->
+                    <!-- ================= THUMBNAIL ================= -->
 
                     <button
                         type="button"
                         class="gallery-video-thumbnail"
-                        onclick="openGalleryVideo(
-                            {{ Js::from($item->video_url) }},
-                            {{ Js::from($item->judul) }}
-                        )">
 
+                        onclick="openGalleryVideo(
+                            {{ Js::from(
+                                $item->video_file
+                                    ? asset('storage/' . $item->video_file)
+                                    : null
+                            ) }},
+
+                            {{ Js::from($item->video_url) }},
+
+                            {{ Js::from($item->judul) }}
+                        )"
+                    >
 
                         @if($item->gambar)
 
@@ -76,13 +85,22 @@
                                     $item->gambar
                                 ) }}"
                                 alt="{{ $item->judul }}"
-                                loading="lazy">
+                                loading="lazy"
+                            >
 
                         @else
 
                             <div class="gallery-video-placeholder">
 
-                                <i class="fa-brands fa-youtube"></i>
+                                @if($item->video_file)
+
+                                    <i class="fa-solid fa-video"></i>
+
+                                @else
+
+                                    <i class="fa-brands fa-youtube"></i>
+
+                                @endif
 
                             </div>
 
@@ -98,7 +116,7 @@
                     </button>
 
 
-                    <!-- Content -->
+                    <!-- ================= CONTENT ================= -->
 
                     <div class="gallery-video-content">
 
@@ -119,10 +137,12 @@
                         @if($item->deskripsi)
 
                             <p>
-                                {{ \Illuminate\Support\Str::limit(
-                                    $item->deskripsi,
-                                    130
-                                ) }}
+                                {{
+                                    \Illuminate\Support\Str::limit(
+                                        $item->deskripsi,
+                                        130
+                                    )
+                                }}
                             </p>
 
                         @endif
@@ -130,10 +150,19 @@
 
                         <button
                             type="button"
+
                             onclick="openGalleryVideo(
+                                {{ Js::from(
+                                    $item->video_file
+                                        ? asset('storage/' . $item->video_file)
+                                        : null
+                                ) }},
+
                                 {{ Js::from($item->video_url) }},
+
                                 {{ Js::from($item->judul) }}
-                            )">
+                            )"
+                        >
 
                             <i class="fa-solid fa-circle-play"></i>
 
@@ -171,8 +200,10 @@
      MODAL VIDEO
 ================================================== -->
 
-<div class="gallery-modal"
-     id="galleryVideoModal">
+<div
+    class="gallery-modal"
+    id="galleryVideoModal"
+>
 
     <div
         class="gallery-modal-overlay"
@@ -186,14 +217,47 @@
             type="button"
             class="gallery-modal-close"
             onclick="closeGalleryVideo()"
-            aria-label="Tutup">
+            aria-label="Tutup"
+        >
 
             <i class="fa-solid fa-xmark"></i>
 
         </button>
 
 
-        <div class="gallery-video-frame">
+        <!-- ================= VIDEO UPLOAD ================= -->
+
+        <div
+            class="gallery-video-frame"
+            id="galleryLocalVideoContainer"
+            style="display:none;"
+        >
+
+            <video
+                id="galleryLocalVideo"
+                controls
+                preload="metadata"
+            >
+
+                <source
+                    id="galleryLocalVideoSource"
+                    src=""
+                >
+
+                Browser Anda tidak mendukung video.
+
+            </video>
+
+        </div>
+
+
+        <!-- ================= YOUTUBE ================= -->
+
+        <div
+            class="gallery-video-frame"
+            id="galleryYoutubeContainer"
+            style="display:none;"
+        >
 
             <iframe
                 id="galleryVideoIframe"
@@ -207,7 +271,8 @@
                     gyroscope;
                     picture-in-picture
                 "
-                allowfullscreen>
+                allowfullscreen
+            >
             </iframe>
 
         </div>
@@ -222,6 +287,13 @@
 
 
 <script>
+
+    /*
+    |--------------------------------------------------------------------------
+    | CONVERT LINK YOUTUBE
+    |--------------------------------------------------------------------------
+    */
+
     function convertYoutubeUrl(url)
     {
         if (!url) {
@@ -233,6 +305,7 @@
         try {
 
             const parsedUrl = new URL(url);
+
 
             /*
              * youtu.be/xxxx
@@ -328,28 +401,141 @@
     }
 
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | OPEN VIDEO
+    |--------------------------------------------------------------------------
+    */
+
     function openGalleryVideo(
-        url,
+        videoFile,
+        videoUrl,
         title
     ) {
 
-        const embedUrl =
-            convertYoutubeUrl(url);
+        const modal =
+            document.getElementById(
+                'galleryVideoModal'
+            );
 
 
-        if (!embedUrl) {
+        const localContainer =
+            document.getElementById(
+                'galleryLocalVideoContainer'
+            );
+
+
+        const youtubeContainer =
+            document.getElementById(
+                'galleryYoutubeContainer'
+            );
+
+
+        const localVideo =
+            document.getElementById(
+                'galleryLocalVideo'
+            );
+
+
+        const localSource =
+            document.getElementById(
+                'galleryLocalVideoSource'
+            );
+
+
+        const iframe =
+            document.getElementById(
+                'galleryVideoIframe'
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VIDEO HASIL UPLOAD
+        |--------------------------------------------------------------------------
+        */
+
+        if (videoFile) {
+
+            youtubeContainer.style.display =
+                'none';
+
+            iframe.src = '';
+
+
+            localContainer.style.display =
+                'block';
+
+            localSource.src =
+                videoFile;
+
+            localVideo.load();
+
+
+            /*
+             * Bisa diaktifkan jika ingin
+             * video otomatis diputar.
+             */
+
+            // localVideo.play();
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VIDEO YOUTUBE
+        |--------------------------------------------------------------------------
+        */
+
+        else if (videoUrl) {
+
+            const embedUrl =
+                convertYoutubeUrl(videoUrl);
+
+
+            if (!embedUrl) {
+
+                alert(
+                    'Link video tidak valid.'
+                );
+
+                return;
+            }
+
+
+            localContainer.style.display =
+                'none';
+
+            localVideo.pause();
+
+            localSource.src = '';
+
+
+            youtubeContainer.style.display =
+                'block';
+
+            iframe.src =
+                embedUrl;
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TIDAK ADA VIDEO
+        |--------------------------------------------------------------------------
+        */
+
+        else {
 
             alert(
-                'Link video belum tersedia atau tidak valid.'
+                'Video belum tersedia.'
             );
 
             return;
         }
-
-
-        document.getElementById(
-            'galleryVideoIframe'
-        ).src = embedUrl;
 
 
         document.getElementById(
@@ -358,9 +544,9 @@
             title || 'Galeri Video';
 
 
-        document.getElementById(
-            'galleryVideoModal'
-        ).classList.add('show');
+        modal.classList.add(
+            'show'
+        );
 
 
         document.body.classList.add(
@@ -369,16 +555,58 @@
     }
 
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | CLOSE VIDEO
+    |--------------------------------------------------------------------------
+    */
+
     function closeGalleryVideo()
     {
-        document.getElementById(
-            'galleryVideoIframe'
-        ).src = '';
+        const localVideo =
+            document.getElementById(
+                'galleryLocalVideo'
+            );
+
+
+        const localSource =
+            document.getElementById(
+                'galleryLocalVideoSource'
+            );
+
+
+        const iframe =
+            document.getElementById(
+                'galleryVideoIframe'
+            );
+
+
+        /*
+         * Stop video upload
+         */
+
+        localVideo.pause();
+
+        localVideo.currentTime = 0;
+
+        localSource.src = '';
+
+        localVideo.load();
+
+
+        /*
+         * Stop Youtube
+         */
+
+        iframe.src = '';
 
 
         document.getElementById(
             'galleryVideoModal'
-        ).classList.remove('show');
+        ).classList.remove(
+            'show'
+        );
 
 
         document.body.classList.remove(
@@ -387,15 +615,25 @@
     }
 
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | ESC UNTUK MENUTUP MODAL
+    |--------------------------------------------------------------------------
+    */
+
     document.addEventListener(
         'keydown',
         function(event)
         {
             if (event.key === 'Escape') {
+
                 closeGalleryVideo();
+
             }
         }
     );
+
 </script>
 
 @endsection

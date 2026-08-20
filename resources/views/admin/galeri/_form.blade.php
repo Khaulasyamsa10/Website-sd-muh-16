@@ -1,331 +1,311 @@
-@php
-    $isEdit = $galeri->exists;
-@endphp
+@if ($errors->any())
 
+    <div class="admin-alert admin-alert-danger">
 
-@if($errors->any())
+        <ul>
 
-    <div class="admin-error-message">
+            @foreach ($errors->all() as $error)
 
-        <i class="fa-solid fa-circle-exclamation"></i>
+                <li>{{ $error }}</li>
 
-        <div>
+            @endforeach
 
-            <strong>
-                Data galeri belum berhasil disimpan.
-            </strong>
-
-            <ul>
-
-                @foreach($errors->all() as $error)
-
-                    <li>{{ $error }}</li>
-
-                @endforeach
-
-            </ul>
-
-        </div>
+        </ul>
 
     </div>
 
 @endif
 
 
-<div class="admin-form-card">
+@if(isset($galeri) && $galeri->exists)
 
     <form
-        action="{{ $isEdit
-            ? route(
-                'admin.galeri.update',
-                $galeri
-            )
-            : route(
-                'admin.galeri.store'
-            )
-        }}"
+        action="{{ route('admin.galeri.update', $galeri) }}"
         method="POST"
-        enctype="multipart/form-data">
+        enctype="multipart/form-data"
+        class="admin-form"
+    >
+
+        @csrf
+        @method('PUT')
+
+@else
+
+    <form
+        action="{{ route('admin.galeri.store') }}"
+        method="POST"
+        enctype="multipart/form-data"
+        class="admin-form"
+    >
 
         @csrf
 
-        @if($isEdit)
-            @method('PUT')
+@endif
+
+
+    <!-- ================= JUDUL ================= -->
+
+    <div class="form-group">
+
+        <label for="judul">
+            Judul Galeri
+        </label>
+
+        <input
+            type="text"
+            id="judul"
+            name="judul"
+            value="{{ old('judul', $galeri->judul ?? '') }}"
+            required
+        >
+
+    </div>
+
+
+    <!-- ================= TIPE ================= -->
+
+    <div class="form-group">
+
+        <label for="tipe">
+            Jenis Galeri
+        </label>
+
+        <select
+            id="tipe"
+            name="tipe"
+            required
+        >
+
+            <option value="">
+                -- Pilih Jenis --
+            </option>
+
+            <option
+                value="foto"
+                {{ old('tipe', $galeri->tipe ?? '') === 'foto' ? 'selected' : '' }}
+            >
+                Foto
+            </option>
+
+            <option
+                value="video"
+                {{ old('tipe', $galeri->tipe ?? '') === 'video' ? 'selected' : '' }}
+            >
+                Video
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <!-- ================= DESKRIPSI ================= -->
+
+    <div class="form-group">
+
+        <label for="deskripsi">
+            Deskripsi
+        </label>
+
+        <textarea
+            id="deskripsi"
+            name="deskripsi"
+            rows="5"
+        >{{ old('deskripsi', $galeri->deskripsi ?? '') }}</textarea>
+
+    </div>
+
+
+    <!-- ================= GAMBAR ================= -->
+
+    <div class="form-group">
+
+        <label for="gambar">
+            Gambar / Thumbnail
+        </label>
+
+        <input
+            type="file"
+            id="gambar"
+            name="gambar"
+            accept="image/jpeg,image/png,image/webp"
+        >
+
+        <small>
+            Untuk galeri foto, gambar wajib diunggah.
+            Untuk video, gambar digunakan sebagai thumbnail.
+        </small>
+
+
+        @if(!empty($galeri->gambar))
+
+            <div style="margin-top:15px;">
+
+                <p>Gambar saat ini:</p>
+
+                <img
+                    src="{{ asset('storage/' . $galeri->gambar) }}"
+                    alt="{{ $galeri->judul }}"
+                    style="
+                        max-width:300px;
+                        border-radius:12px;
+                    "
+                >
+
+            </div>
+
         @endif
 
-
-        <div class="gallery-admin-form-grid">
-
-            <!-- Judul -->
-
-            <div class="gallery-admin-form-group full">
-
-                <label for="judul">
-                    Judul Galeri
-                </label>
-
-                <input
-                    type="text"
-                    id="judul"
-                    name="judul"
-                    value="{{ old(
-                        'judul',
-                        $galeri->judul
-                    ) }}"
-                    placeholder="Contoh: Kegiatan Outing Class"
-                    required>
-
-            </div>
+    </div>
 
 
-            <!-- Jenis -->
+    <!-- ================= VIDEO FILE ================= -->
 
-            <div class="gallery-admin-form-group">
+    <div class="form-group">
 
-                <label for="tipe">
-                    Jenis Galeri
-                </label>
+        <label for="video_file">
+            Upload Video
+        </label>
 
-                <select
-                    id="tipe"
-                    name="tipe"
-                    onchange="toggleGalleryFields()"
-                    required>
+        <input
+            type="file"
+            id="video_file"
+            name="video_file"
+            accept="video/mp4,video/webm,video/quicktime,video/x-m4v"
+        >
 
-                    <option value="">
-                        -- Pilih Jenis --
-                    </option>
+        <small>
+            Bisa upload MP4, MOV, WEBM, atau M4V.
+            Maksimal 100 MB.
+        </small>
 
-                    <option
-                        value="foto"
-                        @selected(
-                            old(
-                                'tipe',
-                                $galeri->tipe
-                            ) === 'foto'
-                        )>
 
-                        Foto
+        @if(!empty($galeri->video_file))
 
-                    </option>
+            <div style="margin-top:15px;">
 
-                    <option
-                        value="video"
-                        @selected(
-                            old(
-                                'tipe',
-                                $galeri->tipe
-                            ) === 'video'
-                        )>
+                <p>Video saat ini:</p>
 
-                        Video
+                <video
+                    controls
+                    style="
+                        width:100%;
+                        max-width:500px;
+                        border-radius:12px;
+                    "
+                >
 
-                    </option>
+                    <source
+                        src="{{ asset('storage/' . $galeri->video_file) }}"
+                    >
 
-                </select>
+                </video>
 
             </div>
 
+        @endif
 
-            <!-- Urutan -->
-
-            <div class="gallery-admin-form-group">
-
-                <label for="urutan">
-                    Urutan Tampil
-                </label>
-
-                <input
-                    type="number"
-                    id="urutan"
-                    name="urutan"
-                    min="0"
-                    value="{{ old(
-                        'urutan',
-                        $galeri->urutan ?? 0
-                    ) }}">
-
-            </div>
+    </div>
 
 
-            <!-- Deskripsi -->
+    <!-- ================= YOUTUBE ================= -->
 
-            <div class="gallery-admin-form-group full">
+    <div class="form-group">
 
-                <label for="deskripsi">
-                    Deskripsi
-                </label>
+        <label for="video_url">
+            Link YouTube
+        </label>
 
-                <textarea
-                    id="deskripsi"
-                    name="deskripsi"
-                    rows="5"
-                    placeholder="Tuliskan deskripsi singkat...">{{ old(
-                        'deskripsi',
-                        $galeri->deskripsi
-                    ) }}</textarea>
+        <input
+            type="url"
+            id="video_url"
+            name="video_url"
+            value="{{ old('video_url', $galeri->video_url ?? '') }}"
+            placeholder="https://www.youtube.com/watch?v=..."
+        >
 
-            </div>
+        <small>
+            Opsional. Isi jika tidak mengupload video langsung.
+        </small>
 
-
-            <!-- Gambar -->
-
-            <div
-                class="gallery-admin-form-group full"
-                id="galleryImageField">
-
-                <label for="gambar">
-                    Gambar / Thumbnail
-                </label>
+    </div>
 
 
-                @if($galeri->gambar)
+    <!-- ================= URUTAN ================= -->
 
-                    <img
-                        src="{{ asset(
-                            'storage/' .
-                            $galeri->gambar
-                        ) }}"
-                        class="gallery-admin-image-preview"
-                        alt="{{ $galeri->judul }}">
+    <div class="form-group">
 
-                @endif
+        <label for="urutan">
+            Urutan
+        </label>
 
+        <input
+            type="number"
+            id="urutan"
+            name="urutan"
+            min="0"
+            value="{{ old('urutan', $galeri->urutan ?? 0) }}"
+        >
 
-                <input
-                    type="file"
-                    id="gambar"
-                    name="gambar"
-                    accept=".jpg,.jpeg,.png,.webp">
-
-                <small>
-                    Untuk foto, gambar wajib diunggah.
-                    Untuk video, gambar digunakan sebagai thumbnail.
-                    Maksimal 5 MB.
-                </small>
-
-            </div>
+    </div>
 
 
-            <!-- Video -->
+    <!-- ================= AKTIF ================= -->
 
-            <div
-                class="gallery-admin-form-group full"
-                id="galleryVideoField">
+    <div class="form-group">
 
-                <label for="video_url">
-                    Link Video YouTube
-                </label>
+        <label>
 
-                <input
-                    type="url"
-                    id="video_url"
-                    name="video_url"
-                    value="{{ old(
-                        'video_url',
-                        $galeri->video_url
-                    ) }}"
-                    placeholder="https://www.youtube.com/watch?v=...">
+            <input
+                type="checkbox"
+                name="aktif"
+                value="1"
 
-                <small>
-                    Masukkan URL YouTube atau YouTube Shorts.
-                </small>
-
-            </div>
-
-
-            <!-- Status -->
-
-            <div class="gallery-admin-form-group full">
-
-                <label class="gallery-admin-checkbox">
-
-                    <input
-                        type="checkbox"
-                        name="aktif"
-                        value="1"
-                        @checked(
-                            old(
-                                'aktif',
-                                $galeri->exists
-                                    ? $galeri->aktif
-                                    : true
-                            )
-                        )>
-
-                    <span>
-                        Tampilkan galeri ini di website
-                    </span>
-
-                </label>
-
-            </div>
-
-        </div>
-
-
-        <div class="gallery-admin-form-actions">
-
-            <a
-                href="{{ route(
-                    'admin.galeri.index'
-                ) }}"
-                class="gallery-admin-secondary-button">
-
-                <i class="fa-solid fa-arrow-left"></i>
-
-                Kembali
-
-            </a>
-
-
-            <button
-                type="submit"
-                class="gallery-admin-primary-button">
-
-                <i class="fa-solid fa-floppy-disk"></i>
-
-                {{ $isEdit
-                    ? 'Simpan Perubahan'
-                    : 'Tambah Galeri'
+                {{
+                    old(
+                        'aktif',
+                        isset($galeri)
+                            ? $galeri->aktif
+                            : true
+                    )
+                    ? 'checked'
+                    : ''
                 }}
+            >
 
-            </button>
+            Tampilkan di website
 
-        </div>
+        </label>
 
-    </form>
-
-</div>
+    </div>
 
 
-<script>
+    <!-- ================= BUTTON ================= -->
 
-    function toggleGalleryFields() {
+    <div class="form-actions">
 
-        const type =
-            document.getElementById('tipe').value;
+        <button
+            type="submit"
+            class="btn-primary"
+        >
 
-        const videoField =
-            document.getElementById(
-                'galleryVideoField'
-            );
+            <i class="fa-solid fa-floppy-disk"></i>
 
-        if (type === 'video') {
+            {{ isset($galeri) && $galeri->exists
+                ? 'Simpan Perubahan'
+                : 'Tambah Galeri'
+            }}
 
-            videoField.style.display = 'flex';
+        </button>
 
-        } else {
 
-            videoField.style.display = 'none';
+        <a
+            href="{{ route('admin.galeri.index') }}"
+            class="btn-secondary"
+        >
+            Batal
+        </a>
 
-        }
+    </div>
 
-    }
-
-    document.addEventListener(
-        'DOMContentLoaded',
-        toggleGalleryFields
-    );
-
-</script>
+</form>

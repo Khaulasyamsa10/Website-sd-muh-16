@@ -14,6 +14,7 @@ class Galeri extends Model
         'deskripsi',
         'gambar',
         'video_url',
+        'video_file',
         'aktif',
         'urutan',
     ];

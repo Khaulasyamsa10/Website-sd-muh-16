@@ -41,43 +41,78 @@ class GaleriController extends Controller
 
         $data['aktif'] = $request->boolean('aktif');
 
+
         /*
-         * Jika tipe foto, gambar wajib ada.
-         */
+        |--------------------------------------------------------------------------
+        | VALIDASI FOTO
+        |--------------------------------------------------------------------------
+        */
+
         if (
             $request->input('tipe') === 'foto' &&
             !$request->hasFile('gambar')
         ) {
             return back()
                 ->withErrors([
-                    'gambar' =>
-                        'Gambar wajib diunggah untuk galeri foto.',
+                    'gambar' => 'Gambar wajib diunggah untuk galeri foto.',
                 ])
                 ->withInput();
         }
 
+
         /*
-         * Jika tipe video, URL video wajib ada.
-         */
+        |--------------------------------------------------------------------------
+        | VALIDASI VIDEO
+        |--------------------------------------------------------------------------
+        |
+        | Video boleh berupa:
+        | 1. Upload video langsung
+        | 2. Link YouTube
+        |
+        */
+
         if (
             $request->input('tipe') === 'video' &&
+            !$request->hasFile('video_file') &&
             !$request->filled('video_url')
         ) {
             return back()
                 ->withErrors([
-                    'video_url' =>
-                        'Link video wajib diisi untuk galeri video.',
+                    'video_file' =>
+                        'Silakan upload video atau isi link YouTube.',
                 ])
                 ->withInput();
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPLOAD GAMBAR / THUMBNAIL
+        |--------------------------------------------------------------------------
+        */
+
         if ($request->hasFile('gambar')) {
             $data['gambar'] = $request
                 ->file('gambar')
-                ->store('galeri', 'public');
+                ->store('galeri/gambar', 'public');
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPLOAD VIDEO
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->hasFile('video_file')) {
+            $data['video_file'] = $request
+                ->file('video_file')
+                ->store('galeri/video', 'public');
+        }
+
+
         Galeri::create($data);
+
 
         return redirect()
             ->route('admin.galeri.index')
@@ -105,6 +140,13 @@ class GaleriController extends Controller
 
         $data['aktif'] = $request->boolean('aktif');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDASI FOTO
+        |--------------------------------------------------------------------------
+        */
+
         if (
             $request->input('tipe') === 'foto' &&
             !$request->hasFile('gambar') &&
@@ -118,17 +160,33 @@ class GaleriController extends Controller
                 ->withInput();
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDASI VIDEO
+        |--------------------------------------------------------------------------
+        */
+
         if (
             $request->input('tipe') === 'video' &&
-            !$request->filled('video_url')
+            !$request->hasFile('video_file') &&
+            !$request->filled('video_url') &&
+            !$galeri->video_file
         ) {
             return back()
                 ->withErrors([
-                    'video_url' =>
-                        'Link video wajib diisi untuk galeri video.',
+                    'video_file' =>
+                        'Silakan upload video atau isi link YouTube.',
                 ])
                 ->withInput();
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | GANTI GAMBAR
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->hasFile('gambar')) {
 
@@ -143,10 +201,35 @@ class GaleriController extends Controller
 
             $data['gambar'] = $request
                 ->file('gambar')
-                ->store('galeri', 'public');
+                ->store('galeri/gambar', 'public');
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | GANTI VIDEO
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->hasFile('video_file')) {
+
+            if (
+                $galeri->video_file &&
+                Storage::disk('public')
+                    ->exists($galeri->video_file)
+            ) {
+                Storage::disk('public')
+                    ->delete($galeri->video_file);
+            }
+
+            $data['video_file'] = $request
+                ->file('video_file')
+                ->store('galeri/video', 'public');
+        }
+
+
         $galeri->update($data);
+
 
         return redirect()
             ->route('admin.galeri.index')
@@ -159,6 +242,12 @@ class GaleriController extends Controller
 
     public function destroy(Galeri $galeri)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | HAPUS GAMBAR
+        |--------------------------------------------------------------------------
+        */
+
         if (
             $galeri->gambar &&
             Storage::disk('public')
@@ -168,7 +257,25 @@ class GaleriController extends Controller
                 ->delete($galeri->gambar);
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | HAPUS VIDEO
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $galeri->video_file &&
+            Storage::disk('public')
+                ->exists($galeri->video_file)
+        ) {
+            Storage::disk('public')
+                ->delete($galeri->video_file);
+        }
+
+
         $galeri->delete();
+
 
         return redirect()
             ->route('admin.galeri.index')
@@ -182,6 +289,7 @@ class GaleriController extends Controller
     private function validateData(
         Request $request
     ): array {
+
         return $request->validate([
 
             'judul' => [
@@ -211,6 +319,13 @@ class GaleriController extends Controller
                 'nullable',
                 'url',
                 'max:2048',
+            ],
+
+            'video_file' => [
+                'nullable',
+                'file',
+                'mimes:mp4,mov,webm,m4v',
+                'max:102400',
             ],
 
             'aktif' => [
@@ -243,6 +358,15 @@ class GaleriController extends Controller
 
             'video_url.url' =>
                 'Link video harus berupa URL yang valid.',
+
+            'video_file.file' =>
+                'File video tidak valid.',
+
+            'video_file.mimes' =>
+                'Format video harus MP4, MOV, WEBM, atau M4V.',
+
+            'video_file.max' =>
+                'Ukuran video maksimal 100 MB.',
 
         ]);
     }
